@@ -1,61 +1,136 @@
-import asyncio
-import datetime
+import os
 import json
+import asyncio
 import threading
-
 import discord
 
+from datetime import *
+from functools import partial
+from json import JSONDecoder
 from chatbot import Chatbot
 
+from timezone import Timezone
+
+
 class Reminder(object):
-	"""
-	Messages should have the format
-	!remindme HH MM <text>
-	"""
-	def __init__(self):
-		pass
 
-	async def respond(self, client, message, bot, text):
-		await client.send_message(message.author, 'Reminder: ' + text)
+    """
+    Messages should have the format:
+    !remindme [date(MM/DD/YY)|repeat|in] [time(in 24hr format ex:22:30)|hh mm (instead if within certain time)ex:00 30] [how many(if repeat)] [message]
+    """
 
-	async def run(self, client, message, bot, query):
-		with open('reminders.txt', 'r') as f:
-			reminders_json = json.load(f)
-		if query == 'self' or query == 'channel':
-			hours = int(message.content.split(' ', 3)[1])
-			minutes = float(message.content.split(' ', 3)[2])
-			text = message.content.split(' ', 3)[3]
+    once00, once15, once30, once45, repeat00, repeat15, repeat30, repeat45 = ([] for i in range(8))
 
-			seconds = hours*60*60 + minutes*60
+    def __init__(self):
+        pass
 
-			now = datetime.datetime.utcnow()
-			sched_time = now + datetime.timedelta(seconds = seconds)
-			reminders_json[str(sched_time)] = {"author": message.author.id, "channel": message.channel.id, "type": query, "text": text}
+    async def respond(self, client, user, text):
+        await client.send_message(user, 'Reminder: ' + text)
 
-			await client.send_message(message.channel, 'Reminder set.')
-			await asyncio.sleep(seconds)
-			if query == 'self':
-				await client.send_message(message.author, 'Reminder: ' + text)
-			if query == 'channel':
-				await client.send_message(message.channel, 'Reminder: ' + text)
+    async def run(self, client, message, bot, *query):
+        if query == 'channel':
+            print('channel')
+            #TODO channel reminder
+        else:
+            option = message.content.split(' ', 3)[1]
+            if os.path.isfile("users.json"):
+                pass
+            else:
+                with open("users.json", 'a'):
+                    os.utime("users.json", None)
+            with open('users.json') as data_file:
+                data = json.load(data_file)
+                while message.author.name not in data:
+                    Timezone().check(client, message)
+                if option == 'in':
+                    text = message.content.split(' ', 4)[4]
+                    hour = float(message.content.split(' ', 4)[2])
+                    minute = float(message.content.split(' ', 4)[3])
+                    await client.send_message(message.channel, 'Reminder set.')
+                    total_seconds = ((hour * 60) + minute)*60
+                    await asyncio.sleep(total_seconds)
+                    await client.send_message(message.author, "Reminder: {}".format(text))
+                else:
+                    await save(client, message, option)
 
-		if query == 'group':
-			''' format is !remind-group <group>; HH MM <message>'''
+    async def check(self, client):
+        print("checking")
+        dateFMT = '%m/%d/%Y'
+        timeFMT = '%H:%M'
+        current_date = datetime.today().date()
+        within_hour = (datetime.today() + timedelta(hours = 1)).strftime(timeFMT)
+        with open('reminder.json', 'r+') as data_file_reminder:
+            if x = y:
+                #temp placeholder
+                pass
+            else:
+                data_reminder = json.load(data_file_reminder)
+                for data_reminder_each in data_reminder:
+                    message_date = datetime.strptime(data_reminder[data_reminder_each]['date'], dateFMT).date()
+                    message_time = data_reminder[data_reminder_each]['time']
+                    if message_time <= within_hour and message_date == current_date:
+                        message = data_reminder[data_reminder_each]['message']
+                        serv = discord.utils.find(lambda m: m.name == Chatbot('settings.txt').server_name, client.servers)
+                        user = discord.utils.find(lambda m: m.name == data_reminder_each, serv.members)
+                        time_seconds = datetime.strptime(message_time, timeFMT) - datetime.strptime(datetime.today().strftime(timeFMT), timeFMT)
+                        data_file_reminder.seek(0)
+                        data_file_reminder.write(json.dumps())
+                        data_file_reminder.truncate()
+                        await asyncio.sleep(time_seconds.seconds)
+                        await client.send_message(user, message)
+        await asyncio.sleep(5)
+        await self.check(client)
 
-			grp = message.content.partition('; ')[0].partition(' ')[2]
-			hours = int(message.content.partition('; ')[2].split(' ', 2)[0])
-			minutes = float(message.content.partition('; ')[2].split(' ', 2)[1])
-			text = message.content.partition('; ')[2].split(' ', 2)[2]
+async def save(client, message, option):
+    if option == 'repeat':
+        reminder_time = Timezone().convertToSystemTime(message)
+        text = message.content.split(' ', 4)[4]
+        how_many = message.content.split(' ', 4)[3]
+        data = {
+            message.author.name:{
+                'time': reminder_time,
+                'message': text,
+                'how many': how_many
+            }
+        }
+        with open('reminderRepeat.json', 'a') as outfile:
+            json.dump(data, outfile)
+        await client.send_message(message.channel, 'Reminder set.')
 
-			seconds = hours*60*60 + minutes*60
+    else:
+        reminder_time = Timezone().convertToSystemTime(message)
+        text = message.content.split(' ', 3)[3]
+        #data = {
+        #    message.author.name: {
+        #        'time': reminder_time,
+        #        'message': text,
+        #        'date': option
+        #    }
+        #}
+        reminder_file = open("reminder.json", 'r+')
+        reminders = json.load(reminder_file)
+        #reminder_file.close()
 
-			await client.send_message(message.channel, 'Reminder set.')
-			message.content = '!group-call {}'.format(grp)
-			await asyncio.sleep(seconds)
-			await bot.group(client, message, 'call')
-			await client.send_message(message.channel, "Reminder: {}".format(text))
-		#with open('reminders.txt', 'w') as f:
-		#	f.write(str(json.dumps(reminders_json)))
-		#needs to be relocated to work properly
-		#t = threading.Timer(seconds, self.respond, [client, message, text])
-		#t.start()
+        reminders[message.author.name] = {"time": reminder_time, "message": text, "date": option}
+
+        reminder_file.write(json.dumps(reminders))
+
+        #reminder_file_edit = open("reminder.json", 'w')
+        #reminder_file_edit.write(str(json.dumps(reminders)))
+        #reminder_file_edit.close()
+
+        await client.send_message(message.channel, 'Reminder set.')
+
+
+def json_parse(file_obj, decoder=JSONDecoder(), buffersize=2048):
+    buffer = ''
+    for chunk in iter(partial(file_obj.read, buffersize), ''):
+        buffer += chunk
+        while buffer:
+            try:
+                result, index = decoder.raw_decode(buffer)
+                yield result
+                buffer = buffer[index:]
+            except ValueError:
+                # Not enough data to decode, read more
+                break

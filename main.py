@@ -16,6 +16,7 @@ from cleverbot import cleverbot
 from chatbot import Chatbot
 from polls import Poll
 from reminder import Reminder
+from timezone import Timezone
 from trivia import Trivia
 
 # Set up the logging module to output diagnostic to the console.
@@ -24,6 +25,7 @@ logging.basicConfig()
 # Create new instances of bot objects
 bot = Chatbot('settings.txt')
 remind_module = Reminder()
+timezone_module = Timezone()
 trivia_module = Trivia()
 poll_module = Poll()
 
@@ -255,6 +257,9 @@ async def on_message(message):
 
 		if message.content.lower().startswith('!remind-group'):
 			await remind_module.run(client, message, bot, 'group')
+
+		if message.content.lower().startswith('!tz'):
+			await timezone_module.setTimeZone(client, message)
 
 		if message.content.lower().startswith('!role-assign'):
 			member_id_or_name = message.content.partition(' ')[2].partition('; ')[0]
