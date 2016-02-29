@@ -59,11 +59,11 @@ class Reminder(object):
         timeFMT = '%H:%M'
         current_date = datetime.today().date()
         within_hour = (datetime.today() + timedelta(hours = 1)).strftime(timeFMT)
-        with open('reminder.json', 'r+') as data_file_reminder:
-            if x = y:
-                #temp placeholder
-                pass
-            else:
+        if os.stat('reminder.json').st_size == 0:
+            #to prevent error if file is empty
+            pass
+        else:
+            with open('reminder.json', 'r+') as data_file_reminder:
                 data_reminder = json.load(data_file_reminder)
                 for data_reminder_each in data_reminder:
                     message_date = datetime.strptime(data_reminder[data_reminder_each]['date'], dateFMT).date()
@@ -78,7 +78,7 @@ class Reminder(object):
                         data_file_reminder.truncate()
                         await asyncio.sleep(time_seconds.seconds)
                         await client.send_message(user, message)
-        await asyncio.sleep(5)
+        await asyncio.sleep(1800)#30 min
         await self.check(client)
 
 async def save(client, message, option):
