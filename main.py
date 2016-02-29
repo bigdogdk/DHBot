@@ -367,6 +367,7 @@ async def on_ready():
 	print('------')
 	global serv
 	serv = discord.utils.find(lambda m: m.name == bot.server_name, client.servers)
+	await remind_module.check(client)
 
 #if not client.is_logged_in:
 #	print('Logging in to Discord failed')

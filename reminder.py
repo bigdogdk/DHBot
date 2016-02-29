@@ -73,12 +73,22 @@ class Reminder(object):
                         serv = discord.utils.find(lambda m: m.name == Chatbot('settings.txt').server_name, client.servers)
                         user = discord.utils.find(lambda m: m.name == data_reminder_each, serv.members)
                         time_seconds = datetime.strptime(message_time, timeFMT) - datetime.strptime(datetime.today().strftime(timeFMT), timeFMT)
-                        data_file_reminder.seek(0)
-                        data_file_reminder.write(json.dumps())
-                        data_file_reminder.truncate()
                         await asyncio.sleep(time_seconds.seconds)
                         await client.send_message(user, message)
-        await asyncio.sleep(1800)#30 min
+                        data_reminder[data_reminder_each] = "true"
+                        data_file_reminder.seek(0)
+                        data_file_reminder.write(json.dumps(data_reminder))
+                        data_file_reminder.truncate()
+        with open('reminder.json', 'r+') as data_file_reminder:
+            data_reminder = json.load(data_file_reminder)
+            for data_reminder_each, v in list(data_reminder.items()):
+                if v == "true":
+                    print("true")
+                    del data_reminder[data_reminder_each]
+                    data_file_reminder.seek(0)
+                    data_file_reminder.write(json.dumps(data_reminder))
+                    data_file_reminder.truncate()
+        await asyncio.sleep(5)#30 min = 1800
         await self.check(client)
 
 async def save(client, message, option):
@@ -98,27 +108,16 @@ async def save(client, message, option):
         await client.send_message(message.channel, 'Reminder set.')
 
     else:
+        #TODO make it add not overwrite
         reminder_time = Timezone().convertToSystemTime(message)
         text = message.content.split(' ', 3)[3]
-        #data = {
-        #    message.author.name: {
-        #        'time': reminder_time,
-        #        'message': text,
-        #        'date': option
-        #    }
-        #}
         reminder_file = open("reminder.json", 'r+')
         reminders = json.load(reminder_file)
-        #reminder_file.close()
-
         reminders[message.author.name] = {"time": reminder_time, "message": text, "date": option}
-
+        reminder_file.seek(0)
         reminder_file.write(json.dumps(reminders))
-
-        #reminder_file_edit = open("reminder.json", 'w')
-        #reminder_file_edit.write(str(json.dumps(reminders)))
-        #reminder_file_edit.close()
-
+        reminder_file.truncate()
+        reminder_file.close()
         await client.send_message(message.channel, 'Reminder set.')
 
 
