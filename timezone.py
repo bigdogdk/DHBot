@@ -27,13 +27,16 @@ class Timezone(object):
             with open("users.json", 'a'):
                 os.utime("users.json", None)
 
-        with open("users.json") as data_file:
-            if message.author.name in data_file:
-                print("Timezone set.")
-            else:
-                await client.send_message(message.author, "You have not set your timezone.")
-                await client.send_message(message.author, "Please DM me '!tz' and you time zone.(according to the format in this file)")
-                await client.send_file(message.author, 'timezone.txt')
+        if os.stat('users.json').st_size == 0:
+            pass
+        else:
+            with open("users.json") as data_file:
+                if message.author.name in data_file:
+                    print("Timezone set.")
+                else:
+                    await client.send_message(message.author, "You have not set your timezone.")
+                    await client.send_message(message.author, "Please DM me '!tz' and you time zone.(according to the format in this file)")
+                    await client.send_file(message.author, 'timezone.txt')
 
     async def setTimeZone(self, client, message):
         await client.send_message(message.author, "You set your timezone as " + message.content.split(' ', 2)[1] + ".")
