@@ -41,7 +41,7 @@ class Reminder(object):
             with open('users.json') as data_file:
                 data = json.load(data_file)
                 while message.author.name not in data:
-                    Timezone().check(client, message)
+                    await Timezone().check(client, message)
                 if option == 'in':
                     text = message.content.split(' ', 4)[4]
                     hour = float(message.content.split(' ', 4)[2])
@@ -111,13 +111,14 @@ async def save(client, message, option):
         #TODO make it add not overwrite
         reminder_time = Timezone().convertToSystemTime(message)
         text = message.content.split(' ', 3)[3]
-        reminder_file = open("reminder.json", 'r+')
-        reminders = json.load(reminder_file)
-        reminders[message.author.name] = {"time": reminder_time, "message": text, "date": option}
-        reminder_file.seek(0)
-        reminder_file.write(json.dumps(reminders))
-        reminder_file.truncate()
-        reminder_file.close()
+
+        with open("reminder.json") as infile:
+            reminder = json.load(infile)
+        reminder[message.author.name] = {"time": reminder_time, "message": text, "date": option}
+
+        with open("reminder.json", 'w') as outfile:
+            json.dump(reminder, outfile)
+
         await client.send_message(message.channel, 'Reminder set.')
 
 
