@@ -35,6 +35,8 @@ clever_bot = cleverbot.Session()
 # Initialize client object, begin connection
 client = discord.Client()
 
+serv = ''
+
 # Event handler
 @client.event
 async def on_member_join(newmember):
@@ -59,6 +61,23 @@ async def on_member_join(newmember):
 @client.event
 async def on_member_update(before, after):
 	notification_channel = discord.utils.find(lambda m: m.name == 'bot-notifications', after.server.channels)
+
+	if (str(before.status) == 'offline' and str(after.status) == 'online') or ((str(before.status) == 'online' or str(before.status) == 'idle') and str(after.status) == 'offline'):
+		try:
+			with open('discord_logs.txt', 'r') as f:
+				discord_logs = json.load(f)
+		except:
+			discord_logs = json.loads('{}')
+		if after.id not in discord_logs:
+			discord_logs[after.id] = {"last login": "N/A", "last logoff": "N/A"}
+		now = str(datetime.utcnow())
+		if str(after.status) == 'online':
+			discord_logs[after.id]['last login'] = now
+		if str(after.status) == 'offline':
+			discord_logs[after.id]['last logoff'] = now
+		with open('discord_logs.txt', 'w') as f:
+			f.write(json.dumps(discord_logs))
+	
 	if str(before.status) == 'offline' and str(after.status) == 'online' and bot.check_role(client, after, "Member") == True:
 			x = open("display_names.txt", 'r')
 			disp_names = json.load(x)
@@ -84,6 +103,9 @@ async def on_member_update(before, after):
 async def on_message(message):
 
 	if bot.check_role(client, message, 'BotBan') == False:
+
+		if message.content.lower() == '!test':
+			await client.send_message(message.channel, serv.name)
 
 		if message.content.lower().startswith('!play'):
 			await bot.play(client, message, serv)
@@ -194,6 +216,15 @@ async def on_message(message):
 
 		if message.content.lower().startswith('!help-delete'):
 			await bot.help(client, message, 'delete')
+
+		if message.content.startswith('!last_on '):
+			id_or_name = message.content.partition(' ')[2]
+			member = bot.member_lookup(client, id_or_name, serv)
+			if member != None:
+				last_on = bot.log_fnc(member, 'last on')
+				await client.send_message(message.channel, "{} was last seen online: {}.".format(member.name, str(last_on).partition('.')[0]))
+			else:
+				await client.send_message(message.channel, "There was an error finding the member {}. There may be multiple or no members with that name/ID.".format(id_or_name))
 
 		if message.content.lower().startswith('!lmgtfy'):
 			await bot.lmgtfy(client, message)
