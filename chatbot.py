@@ -569,7 +569,39 @@ class Chatbot(object):
 	async def lmgtfy(self, client, message):
 		search = message.content.partition(' ')[2].replace(' ','+')
 		await client.send_message(message.channel, 'http://lmgtfy.com/?q='+search)
+	
+	def log_fnc(self, member, query):
+		try:
+			with open ('discord_logs.txt', 'r') as f:
+				discord_logs = json.load(f)
+		except:
+			discord_logs = {}
 
+		if query == 'last on':
+			if str(member.status) == 'online':
+				return 'now'
+			else:
+				try:
+					last_login = datetime.strptime(discord_logs[member.id]['last login'], '%Y-%m-%d %H:%M:%S.%f')
+					last_logoff = datetime.strptime(discord_logs[member.id]['last logoff'], '%Y-%m-%d %H:%M:%S.%f')
+					if last_login > last_logoff:
+						return last_login
+					else:
+						return last_logoff
+				except:
+					return 'before tracking'
+
+	def member_lookup(self, client, id_or_name, serv):
+		try:
+			member = discord.utils.find(lambda m: m.id == str(int(id_or_name)), serv.members)
+			return member
+		except:
+			if self.check_name(client, id_or_name) == 'None' or self.check_name(client, id_or_name) == 'Multi':
+				return None
+			else:
+				member = discord.utils.find(lambda m: m.name == id_or_name, serv.members)
+				return member
+		
 	def log_fnc(self, member, query):
 		try:
 			with open ('discord_logs.txt', 'r') as f:

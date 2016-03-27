@@ -78,6 +78,23 @@ async def on_member_update(before, after):
 		with open('discord_logs.txt', 'w') as f:
 			f.write(json.dumps(discord_logs))
 	
+	
+	if (str(before.status) == 'offline' and str(after.status) == 'online') or ((str(before.status) == 'online' or str(before.status) == 'idle') and str(after.status) == 'offline'):
+		try:
+			with open('discord_logs.txt', 'r') as f:
+				discord_logs = json.load(f)
+		except:
+			discord_logs = json.loads('{}')
+		if after.id not in discord_logs:
+			discord_logs[after.id] = {"last login": "N/A", "last logoff": "N/A"}
+		now = str(datetime.utcnow())
+		if str(after.status) == 'online':
+			discord_logs[after.id]['last login'] = now
+		if str(after.status) == 'offline':
+			discord_logs[after.id]['last logoff'] = now
+		with open('discord_logs.txt', 'w') as f:
+			f.write(json.dumps(discord_logs))
+	
 	if str(before.status) == 'offline' and str(after.status) == 'online' and bot.check_role(client, after, "Member") == True:
 			x = open("display_names.txt", 'r')
 			disp_names = json.load(x)
