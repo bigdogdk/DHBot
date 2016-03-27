@@ -298,13 +298,17 @@ async def on_message(message):
 			await bot.stop_bot(client, message)
 
 		if message.content.lower().startswith('!remindme'):
-			await remind_module.run(client, message, bot, 'self')
+			await remind_module.run(client, message, bot)
+
+		if message.content.lower().startswith('!food'):
+			await asyncio.sleep(10) #25 minutes = 1500
+			await client.send_message(message.channel, "Food check!")
 
 		if message.content.lower().startswith('!reminder'):
-			await remind_module.run(client, message, bot, 'channel')
+			await remind_module.channel(client, message, bot)
 
 		if message.content.lower().startswith('!remind-group'):
-			await remind_module.run(client, message, bot, 'group')
+			await remind_module.run(client, message, bot)
 
 		if message.content.lower().startswith('!tz'):
 			await timezone_module.setTimeZone(client, message)

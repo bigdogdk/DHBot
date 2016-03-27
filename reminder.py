@@ -19,39 +19,44 @@ class Reminder(object):
     !remindme [date(MM/DD/YY)|repeat|in] [time(in 24hr format ex:22:30)|hh mm (instead if within certain time)ex:00 30] [how many(if repeat)] [message]
     """
 
-    once00, once15, once30, once45, repeat00, repeat15, repeat30, repeat45 = ([] for i in range(8))
-
     def __init__(self):
         pass
 
     async def respond(self, client, user, text):
         await client.send_message(user, 'Reminder: ' + text)
 
-    async def run(self, client, message, bot, *query):
-        if query == 'channel':
-            print('channel')
-            #TODO channel reminder
+    async def channel(self, client, message, bot):
+        hours = int(message.content.split(' ', 3)[1])
+        minutes = float(message.content.split(' ', 3)[2])
+        text = message.content.split(' ', 3)[3]
+
+        seconds = hours*60*60 + minutes*60
+
+        await client.send_message(message.channel, 'Reminder set.')
+        await asyncio.sleep(seconds)
+        await client.send_message(message.channel, 'Reminder: ' + text)
+
+    async def run(self, client, message, bot):
+        option = message.content.split(' ', 3)[1]
+        if os.path.isfile("users.json"):
+            pass
         else:
-            option = message.content.split(' ', 3)[1]
-            if os.path.isfile("users.json"):
-                pass
+            with open("users.json", 'a'):
+                os.utime("users.json", None)
+        with open('users.json') as data_file:
+            data = json.load(data_file)
+            while message.author.name not in data:
+                await Timezone().check(client, message)
+            if option == 'in':
+                text = message.content.split(' ', 4)[4]
+                hour = float(message.content.split(' ', 4)[2])
+                minute = float(message.content.split(' ', 4)[3])
+                await client.send_message(message.channel, 'Reminder set.')
+                total_seconds = ((hour * 60) + minute)*60
+                await asyncio.sleep(total_seconds)
+                await client.send_message(message.author, "Reminder: {}".format(text))
             else:
-                with open("users.json", 'a'):
-                    os.utime("users.json", None)
-            with open('users.json') as data_file:
-                data = json.load(data_file)
-                while message.author.name not in data:
-                    await Timezone().check(client, message)
-                if option == 'in':
-                    text = message.content.split(' ', 4)[4]
-                    hour = float(message.content.split(' ', 4)[2])
-                    minute = float(message.content.split(' ', 4)[3])
-                    await client.send_message(message.channel, 'Reminder set.')
-                    total_seconds = ((hour * 60) + minute)*60
-                    await asyncio.sleep(total_seconds)
-                    await client.send_message(message.author, "Reminder: {}".format(text))
-                else:
-                    await save(client, message, option)
+                await save(client, message, option)
 
     async def check(self, client):
         print("checking")
@@ -59,6 +64,15 @@ class Reminder(object):
         timeFMT = '%H:%M'
         current_date = datetime.today().date()
         within_hour = (datetime.today() + timedelta(hours = 1)).strftime(timeFMT)
+        with open('reminder.json', 'r+') as data_file_reminder:
+            data_reminder = json.load(data_file_reminder)
+            for data_reminder_each, v in list(data_reminder.items()):
+                if v == "true":
+                    print("true")
+                    del data_reminder[data_reminder_each]
+                    data_file_reminder.seek(0)
+                    data_file_reminder.write(json.dumps(data_reminder))
+                    data_file_reminder.truncate()
         if os.stat('reminder.json').st_size == 0:
             #to prevent error if file is empty
             pass
@@ -79,15 +93,6 @@ class Reminder(object):
                         data_file_reminder.seek(0)
                         data_file_reminder.write(json.dumps(data_reminder))
                         data_file_reminder.truncate()
-        with open('reminder.json', 'r+') as data_file_reminder:
-            data_reminder = json.load(data_file_reminder)
-            for data_reminder_each, v in list(data_reminder.items()):
-                if v == "true":
-                    print("true")
-                    del data_reminder[data_reminder_each]
-                    data_file_reminder.seek(0)
-                    data_file_reminder.write(json.dumps(data_reminder))
-                    data_file_reminder.truncate()
         await asyncio.sleep(5)#30 min = 1800
         await self.check(client)
 
