@@ -25,6 +25,22 @@ class Reminder(object):
     async def respond(self, client, user, text):
         await client.send_message(user, 'Reminder: ' + text)
 
+    async def group(self, client, message, bot):
+        ''' format is !remind-group <group>; HH MM <message>'''
+
+        grp = message.content.partition('; ')[0].partition(' ')[2]
+        hours = int(message.content.partition('; ')[2].split(' ', 2)[0])
+        minutes = float(message.content.partition('; ')[2].split(' ', 2)[1])
+        text = message.content.partition('; ')[2].split(' ', 2)[2]
+
+        seconds = hours*60*60 + minutes*60
+
+        await client.send_message(message.channel, 'Reminder set.')
+        message.content = '!group-call {}'.format(grp)
+        await asyncio.sleep(seconds)
+        await bot.group(client, message, 'call')
+        await client.send_message(message.channel, "Reminder: {}".format(text))
+
     async def channel(self, client, message, bot):
         hours = int(message.content.split(' ', 3)[1])
         minutes = float(message.content.split(' ', 3)[2])

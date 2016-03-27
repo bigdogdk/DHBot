@@ -301,6 +301,7 @@ async def on_message(message):
 			await remind_module.run(client, message, bot)
 
 		if message.content.lower().startswith('!food'):
+			await client.send_message(message.channel, "Timer started.")
 			await asyncio.sleep(10) #25 minutes = 1500
 			await client.send_message(message.channel, "Food check!")
 
@@ -308,7 +309,7 @@ async def on_message(message):
 			await remind_module.channel(client, message, bot)
 
 		if message.content.lower().startswith('!remind-group'):
-			await remind_module.run(client, message, bot)
+			await remind_module.group(client, message, bot)
 
 		if message.content.lower().startswith('!tz'):
 			await timezone_module.setTimeZone(client, message)
