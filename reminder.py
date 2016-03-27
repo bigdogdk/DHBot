@@ -75,7 +75,6 @@ class Reminder(object):
                 await save(client, message, option)
 
     async def check(self, client):
-        print("checking")
         dateFMT = '%m/%d/%Y'
         timeFMT = '%H:%M'
         current_date = datetime.today().date()
@@ -84,7 +83,6 @@ class Reminder(object):
             data_reminder = json.load(data_file_reminder)
             for data_reminder_each, v in list(data_reminder.items()):
                 if v == "true":
-                    print("true")
                     del data_reminder[data_reminder_each]
                     data_file_reminder.seek(0)
                     data_file_reminder.write(json.dumps(data_reminder))
@@ -109,7 +107,7 @@ class Reminder(object):
                         data_file_reminder.seek(0)
                         data_file_reminder.write(json.dumps(data_reminder))
                         data_file_reminder.truncate()
-        await asyncio.sleep(5)#30 min = 1800
+        await asyncio.sleep(1800)#30 min = 1800
         await self.check(client)
 
 async def save(client, message, option):

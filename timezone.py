@@ -39,12 +39,17 @@ class Timezone(object):
                     await client.send_file(message.author, 'timezone.txt')
 
     async def setTimeZone(self, client, message):
-        await client.send_message(message.author, "You set your timezone as " + message.content.split(' ', 2)[1] + ".")
-        with open("users.json") as infile:
-            users = json.load(infile)
-        users[message.author.name] = message.content.split(' ', 2)[1]
-        with open("users.json", 'w') as outfile:
-            json.dump(users, outfile)
+        if len(message.content) < 4:
+            await client.send_message(message.author, "You have not set your timezone.")
+            await client.send_message(message.author, "Please message me '!tz' and you timezone.(according to the format in this file)")
+            await client.send_file(message.author, 'timezone.txt')
+        else:
+            await client.send_message(message.author, "You set your timezone as " + message.content.split(' ', 2)[1] + ".")
+            with open("users.json") as infile:
+                users = json.load(infile)
+            users[message.author.name] = message.content.split(' ', 2)[1]
+            with open("users.json", 'w') as outfile:
+                json.dump(users, outfile)
 
     def convertToSystemTime(self, message):
         system_tz = get_localzone()
