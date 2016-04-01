@@ -1,13 +1,8 @@
 import json
 import os
-import asyncio
-import time
-import discord
 import pytz
 
 from datetime import datetime
-from dateutil.tz import *
-from dateutil import tz
 from tzlocal import get_localzone
 
 
@@ -16,8 +11,8 @@ class Timezone(object):
     def __init__(self):
         pass
 
-    def run (self, client, message):
-        print("hello")
+    def run (self):
+        pass
 
     async def check(self, client, message):
         print("checking.")

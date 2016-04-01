@@ -1,7 +1,6 @@
 import os
 import json
 import asyncio
-import threading
 import discord
 
 from datetime import *
@@ -117,7 +116,6 @@ class Reminder(object):
             for data_reminder_repeat_each in data_reminder_repeat:
                 message_time = data_reminder_repeat[data_reminder_repeat_each]['time']
                 if message_time <= within_hour:
-                    how_many = data_reminder_repeat[data_reminder_repeat_each]['how_many']
                     message = data_reminder_repeat[data_reminder_repeat_each]['message']
                     serv = discord.utils.find(lambda m: m.name == Chatbot('settings.txt').server_name, client.servers)
                     user = discord.utils.find(lambda m: m.name == data_reminder_repeat_each, serv.members)
