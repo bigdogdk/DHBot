@@ -302,7 +302,7 @@ async def on_message(message):
 
 		if message.content.lower().startswith('!food'):
 			await client.send_message(message.channel, "Timer started.")
-			await asyncio.sleep(10) #25 minutes = 1500
+			await asyncio.sleep(1500) #25 minutes = 1500
 			await client.send_message(message.channel, "Food check!")
 
 		if message.content.lower().startswith('!reminder'):
