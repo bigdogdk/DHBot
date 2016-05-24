@@ -54,11 +54,6 @@ class Reminder(object):
 
     async def run(self, client, message, bot):
         option = message.content.split(' ', 3)[1]
-        if os.path.isfile("users.json"):
-            pass
-        else:
-            with open("users.json", 'a'):
-                os.utime("users.json", None)
 
         with open('users.json') as data_file:
             data = json.load(data_file)
@@ -77,6 +72,11 @@ class Reminder(object):
                 await self.check(client)
 
     async def check(self, client):
+        if os.path.isfile("users.json"):
+            pass
+        else:
+            with open("users.json", 'a'):
+                os.utime("users.json", None)
         if os.path.isfile('reminder.json'):
             pass
         else:
