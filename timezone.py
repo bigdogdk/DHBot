@@ -64,8 +64,6 @@ class Timezone(object):
 
     def tzList(self):
         alltz = pytz.all_timezones.__str__()
-        print(alltz)
-        alltzfinal = alltz.replace(',', '\r\n')
-        print(alltzfinal)
+        alltzfinal = alltz.replace(',', '\n')
         with open("timezone.txt", 'w') as file:
-            file.write(alltz)
+            file.write(alltzfinal)
