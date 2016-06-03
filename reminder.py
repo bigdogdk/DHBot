@@ -72,22 +72,26 @@ class Reminder(object):
                 await self.check(client)
 
     async def check(self, client):
+        if os.path.isfile("timezone.txt"):
+            pass
+        else:
+            Timezone.tzList(self)
         if os.path.isfile("users.json"):
             pass
         else:
-            with open("users.json", 'a'):
-                os.utime("users.json", None)
+            with open("users.json", 'w')as fr:
+                fr.write("{}")
         if os.path.isfile('reminder.json'):
             pass
         else:
-            with open('reminder.json', "w") as fr:
-                fr.write("{}")
+            with open('reminder.json', "w") as frr:
+                frr.write("{}")
 
         if os.path.isfile('reminderRepeat.json'):
             pass
         else:
-            with open('reminderRepeat.json', "w") as frr:
-                frr.write("{}")
+            with open('reminderRepeat.json', "w") as frrr:
+                frrr.write("{}")
 
         self.purge()
 

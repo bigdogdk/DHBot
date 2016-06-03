@@ -61,3 +61,9 @@ class Timezone(object):
         final_time = aware_time.astimezone(system_tz)
 
         return final_time.strftime('%H:%M')
+
+    def tzList(self):
+        alltz = pytz.all_timezones.__str__()
+        alltz.replace(',', '\n')
+        with open("timezone.txt", 'w') as file:
+            file.write(alltz)
